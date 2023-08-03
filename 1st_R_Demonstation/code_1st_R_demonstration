@@ -1,0 +1,138 @@
+### saving of the histogram as pdf 
+rm(list = ls())
+mydir <- "C://Users//sudesh yadav//OneDrive - IIT Kanpur//Desktop//Spatial_Statistics//R Demonstrations Practice//Ist demonstration"
+setwd(mydir)
+
+library(readxl)
+
+observed <- read_excel("obs_As.xlsx")
+
+S <- cbind(observed$LON,observed$LAT)
+
+Y <- observed$As
+
+X <- log(observed$As)
+
+hist(X)
+
+hist(X, probability = TRUE)
+hist(X, probability = TRUE, main = "log-Arsenic Con.")
+
+#------------------------------------
+library(ggplot2)
+
+ggplot() + geom_histogram(aes(x=X))
+
+ggplot() + geom_histogram(aes(x= X), colour= "black")
+
+ggplot() + geom_histogram(aes(x= X), colour= "black", fill= "green")
+
+ggplot() + geom_histogram(aes(x= X), colour = "black", bins = 20)
+
+#Ajust the breaks of the bins 
+ggplot() + geom_histogram(aes(x= X), colour = "black", bins = 20, breaks = hist(X,plot = F)$breaks)
+
+# on x axis the density is plotted 
+ggplot() + geom_histogram(aes(x= X, y = after_stat(density) ), colour = "black", bins = 20, breaks = hist(X,plot = F)$breaks)
+
+# giving a title to the plot 
+ggplot() + geom_histogram(aes(x= X, y = after_stat(density) ), colour = "black", bins = 20, breaks = hist(X,plot = F)$breaks)+
+  ggtitle("log- Arsenic Cons.")
+
+# putting tittle in the centre
+ggplot() + geom_histogram(aes(x= X, y = after_stat(density) ), colour = "black", bins = 20, breaks = hist(X,plot = F)$breaks)+
+  ggtitle("log- Arsenic Cons.") + theme(plot.title = element_text(hjust = 0.5))
+
+#giving label to x axis and y axis 
+ggplot() + geom_histogram(aes(x= X, y = after_stat(density) ), colour = "black", bins = 20, breaks = hist(X,plot = F)$breaks)+
+  ggtitle("log- Arsenic Cons.") + theme(plot.title = element_text(hjust = 0.5))+
+  xlab("log-As(ug/L)") + ylab("Density")
+
+# adjusting the size of the points on  the axis and texts on the title and the labels of x and y axix
+ggplot() + geom_histogram(aes(x= X, y = after_stat(density) ), colour = "black", bins = 20, breaks = hist(X,plot = F)$breaks)+
+  ggtitle("log- Arsenic Cons.") + theme(plot.title = element_text(hjust = 0.5))+
+  xlab("log-As(ug/L)") + ylab("Density") + theme(axis.title = element_text(size = 20),
+                                                 axis.text = element_text(size= 20),
+                                                 plot.title = element_text(size = 20))
+p <-ggplot() + geom_histogram(aes(x= X, y = after_stat(density) ), colour = "black", bins = 20, breaks = hist(X,plot = F)$breaks)+
+  ggtitle("log- Arsenic Cons.") + theme(plot.title = element_text(hjust = 0.5))+
+  xlab("log-As(ug/L)") + ylab("Density") + theme(axis.title = element_text(size = 20),
+                                                 axis.text = element_text(size= 20),
+                                                 plot.title = element_text(size = 20)) 
+ggsave(p, filename = "histogram_As.pdf", height = 6, width = 6)
+
+
+
+
+
+############################################################################################################################
+######Spatial google map savng as pdf 
+my_dir <- mydir <- "C://Users//sudesh yadav//OneDrive - IIT Kanpur//Desktop//Spatial_Statistics//R Demonstrations Practice//Ist demonstration"
+setwd(my_dir)
+library(readxl)
+
+observed <- read_excel("obs_As.xlsx")
+
+S <- cbind(observed$LON, observed$LAT)
+
+Y <- observed$As
+
+X <- log(observed$As)
+
+#-------------------
+#plot3D
+
+library(plot3D)
+
+scatter2D(x = S[ ,1], y = S[ , 2], colvar = X)
+
+scatter2D(x = S[ ,1], y = S[ ,2], colvar = X, pch= 12)
+
+scatter2D(x = S[ ,1], y = S[ ,2], colvar = X, pch= 12, xlab = "Longitude", ylab = "Latitude", main = "Log-Arsenic Cons")
+
+#------------------------------
+#ggplot
+
+library(ggplot2)
+library(viridis)
+
+ggplot() + geom_point(aes(x = S[ , 1], y = S[ , 2], color = X))
+
+ggplot() + geom_point(aes(x = S[ , 1], y = S[ , 2], color = X)) + 
+  labs(title = "log-Arsenic conc.", x = "Longitude", y = "Latitude") + 
+  theme(axis.text = element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20, hjust = 0.5),
+        legend.text = element_text(size = 20),
+        legend.title = element_text(size = 20), 
+        legend.key.size = unit(0.4, "in")) + 
+  scale_color_viridis(name = "log-As", option = "magma")
+
+#--------------------------------
+# google maps 
+library(ggplot2)
+library(viridis)
+library(ggmap)
+
+bdbox <- make_bbox(lon = c(min(S[ ,1]), max(S[,1])), 
+                   lat = c(max(S[ ,2]), min(S[ ,2])),f = 0.1)
+bd <- get_map(location = bdbox, zoom = 7, maptype = "terrain", source = "stamen")
+
+ggmap(bd)
+
+df <- data.frame(x = S[ , 1], y = S[ , 2], data = X)
+
+ggmap(bd) + geom_point(df, mapping = aes(x= x, y = y, color = data))
+
+p <- ggmap(bd) + geom_point(df, mapping = aes(x= x, y = y, color = data, size= 0.5))+
+  labs(title = "log-Arsenic conc.", x = "Longitude", y = "Latitude") + 
+  theme(axis.text = element_text(size=20),
+        axis.title=element_text(size=20),
+        plot.title = element_text(size=20, hjust = 0.5),
+        legend.text = element_text(size = 20),
+        legend.title = element_text(size = 20), 
+        legend.key.size = unit(0.4, "in")) + 
+  scale_color_viridis(name = "log-As", option = "magma")
+
+ggsave(p, filename = "As_spatial.pdf", height = 6, width = 5.5 )
+
